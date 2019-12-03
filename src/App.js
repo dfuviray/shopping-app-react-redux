@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Table from "./components/table";
 import Form from "./components/form";
 import Navbar from "./components/navBar";
+import { connect } from "react-redux";
 
 class App extends Component {
   state = {
@@ -19,20 +20,22 @@ class App extends Component {
   };
 
   handleDelete = item => {
-    const { shoppingItems } = this.state;
-    const filteredItems = shoppingItems.filter(i => i.id !== item.id);
-    this.setState({ shoppingItems: filteredItems });
+    // const { shoppingItems } = this.state;
+    // const filteredItems = shoppingItems.filter(i => i.id !== item.id);
+    // this.setState({ shoppingItems: filteredItems });
+    this.props.delete(item);
   };
 
   handleSubmit = e => {
     e.preventDefault();
-    const shoppingItems = [...this.state.shoppingItems];
-    const id = Date.now().toString();
-    const desc = this.state.desc;
-    const quantity = this.state.quantity;
-    const price = this.state.price;
-    shoppingItems.push({ id, desc, quantity, price });
-    this.setState({ shoppingItems });
+    // // const shoppingItems = [...this.state.shoppingItems];
+    // const id = Date.now().toString();
+    // const desc = this.state.desc;
+    // const quantity = this.state.quantity;
+    // const price = this.state.price;
+    // // shoppingItems.push({ id, desc, quantity, price });
+    // // this.setState({ shoppingItems });
+    this.props.add(this.state);
     this.clearInput();
   };
 
@@ -47,7 +50,7 @@ class App extends Component {
   }
 
   getGrandTotal() {
-    const { shoppingItems } = this.state;
+    const { shoppingItems } = this.props;
     return shoppingItems
       .map(item => item)
       .reduce((total, item) => total + item.quantity * item.price, 0);
@@ -69,7 +72,7 @@ class App extends Component {
             />
             <h3 className="my-3">Grand Total: {this.getGrandTotal()}</h3>
             <Table
-              items={this.state.shoppingItems}
+              items={this.props.shoppingItems}
               onDelete={this.handleDelete}
             />
           </div>
@@ -79,4 +82,28 @@ class App extends Component {
   }
 }
 
-export default App;
+const mapStateToProps = state => {
+  return {
+    shoppingItems: state.shoppingItems
+  };
+};
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    add: state =>
+      dispatch({
+        type: "ADD_ITEM",
+        desc: state.desc,
+        quantity: state.quantity,
+        price: state.price
+      }),
+    delete: item => {
+      dispatch({
+        type: "DELETE_ITEM",
+        item: item
+      });
+    }
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
